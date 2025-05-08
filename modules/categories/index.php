@@ -7,6 +7,7 @@ require_once '../../includes/navbar.php';
 
 $category = new Category();
 $categories = $category->getAllCategories();
+
 ?>
 
 <div class="container mt-4">
@@ -154,5 +155,7 @@ $categories = $category->getAllCategories();
         </div>
     </div>
 </div>
+
+
 
 <?php require_once '../../includes/footer.php'; ?>

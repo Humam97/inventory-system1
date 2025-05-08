@@ -2,15 +2,11 @@
 // modules/categories/edit.php
 require_once '../../config/database.php';
 require_once '../../classes/Category.php';
-require_once '../../includes/header.php';
-require_once '../../includes/navbar.php';
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-$category = new Category();
 
 // Check if id is provided
 if (!isset($_GET['id'])) {
@@ -19,6 +15,8 @@ if (!isset($_GET['id'])) {
     header('Location: index.php');
     exit();
 }
+
+$category = new Category();
 
 // Get category data
 $categoryData = $category->getCategory($_GET['id']);
@@ -31,23 +29,31 @@ if (!$categoryData) {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Debug: Print the POST data
-    error_log("Updating category: " . print_r($_POST, true));
+    // Debug
+    error_log("POST Data: " . print_r($_POST, true));
+    error_log("Category ID: " . $_GET['id']);
     
-    if ($category->updateCategory($_GET['id'], $_POST)) {
+    $updateData = array(
+        'category_name' => $_POST['category_name'],
+        'description' => $_POST['description']
+    );
+    
+    if ($category->updateCategory($_GET['id'], $updateData)) {
         $_SESSION['message'] = 'Category updated successfully!';
         $_SESSION['message_type'] = 'success';
         header('Location: index.php');
         exit();
     } else {
-        // Get the MySQL error if any
         $db = Database::getInstance();
         $error = mysqli_error($db->getConnection());
         $_SESSION['message'] = 'Error updating category: ' . $error;
         $_SESSION['message_type'] = 'danger';
-        error_log("Error updating category: " . $error);
+        error_log("MySQL Error: " . $error);
     }
 }
+
+require_once '../../includes/header.php';
+require_once '../../includes/navbar.php';
 ?>
 
 <div class="container mt-4">
@@ -55,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="col-md-8 offset-md-2">
             <div class="card">
                 <div class="card-header">
-                    <h4>Edit Category</h4>
+                    <h4>Edit Category: <?= htmlspecialchars($categoryData['category_name']) ?></h4>
                 </div>
                 <div class="card-body">
                     <?php if (isset($_SESSION['message'])): ?>
@@ -72,13 +78,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <form action="edit.php?id=<?= $_GET['id'] ?>" method="POST">
                         <div class="mb-3">
                             <label for="category_name" class="form-label">Category Name</label>
-                            <input type="text" class="form-control" name="category_name" 
+                            <input type="text" class="form-control" id="category_name" name="category_name" 
                                    value="<?= htmlspecialchars($categoryData['category_name']) ?>" required>
                         </div>
 
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" name="description" rows="3"><?= htmlspecialchars($categoryData['description']) ?></textarea>
+                            <textarea class="form-control" id="description" name="description" rows="3"><?= htmlspecialchars($categoryData['description']) ?></textarea>
                         </div>
 
                         <div class="text-end">
